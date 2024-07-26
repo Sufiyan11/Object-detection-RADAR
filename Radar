@@ -1,0 +1,52 @@
+import radar_sdk
+import numpy as np
+from scipy.signal import find_peaks
+import matplotlib.pyplot as plt
+
+#Capturing Data
+
+radar = radar_sdk.connect()
+data = radar.capture_data()
+
+
+#Signal Processing
+
+def detect_objects(data):
+    processed_data = process_data(data)
+    peaks, _ = find_peaks(processed_data, height=threshold)
+    objects = []
+    for peak_idx in peaks:
+        distance = calculate_distance(peak_idx)
+        angle = calculate_angle(peak_idx)
+        objects.append((distance, angle))
+    return objects
+
+
+def process_data(data):
+    processed_data = np.abs(np.fft.fft(data))
+    return processed_data
+
+
+def calculate_distance(peak_idx):
+    return peak_idx * radar_resolution
+
+
+def calculate_angle(peak_idx):
+    return peak_idx * radar_angle_resolution
+
+#Data representation
+
+def plot_detected_objects(objects):
+    angles = [angle for _, angle in objects]
+    distances = [distance for distance, _ in objects]
+    plt.figure()
+    ax = plt.subplot(111, projection='polar')
+    ax.scatter(angles, distances)
+    ax.set_theta_direction(-1)
+    ax.set_theta_zero_location('N')
+    plt.show()
+
+
+raw_data = capture_radar_data()
+detected_objects = detect_objects(raw_data)
+plot_detected_objects(detected_objects)
